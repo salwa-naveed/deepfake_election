@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Election Deepfakes Tracker, 2020–2024</title>
+<title>U.S. Election Deepfakes Tracker, 2020–2024</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="site-header">
-  <a class="brand" href="#overview"><span class="logo">EDT</span><span><b>Election Deepfakes Tracker</b><small>Incidents and legislation, 2020–2024</small></span></a>
+  <a class="brand" href="#overview"><span class="logo">EDT</span><span><b>U.S. Election Deepfakes Tracker</b><small>Incidents and state legislation, 2020–2024</small></span></a>
   <button id="menuBtn" aria-label="Open navigation menu">Menu</button>
   <nav id="nav">
     <a href="#overview" data-r="overview">Overview</a>
@@ -20,7 +20,11 @@
 </header>
 <main id="app"></main>
 <dialog id="dlg"><div id="dlgBody"></div></dialog>
-<footer class="site-footer">Working draft. Counts are collected records, not a complete count of election deepfakes or laws. Inclusion does not establish that media is fake.</footer>
+<footer class="site-footer">Working draft. United States only, 2020–2024. Counts are collected records, not a complete count of election deepfakes or laws. Inclusion does not establish that media is fake.</footer>
+<script src="vendor/d3-array.min.js"></script>
+<script src="vendor/d3-geo.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="vendor/us-states.js"></script>
 <script src="data/data.js"></script>
 <script src="app.js"></script>
 </body>

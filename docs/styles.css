@@ -56,3 +56,17 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:6px 12px}dt{color:var(--mute
 .site-footer{border-top:1px solid var(--line);padding:18px 24px;color:var(--mute);font-size:13px;text-align:center}
 .car{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px}
 @media (max-width:720px){#menuBtn{display:block}nav{display:none;width:100%;flex-direction:column;gap:6px}nav.open{display:flex}.hb{grid-template-columns:minmax(80px,40%) 1fr 40px}}
+:root{--m-enacted:#3a9bc4;--m-pending:#bfe3dc;--m-failed:#d8d2c6;--m-none:#fff;--m-line:#fff}
+@media (prefers-color-scheme:dark){:root{--m-enacted:#4aa8d0;--m-pending:#3d7d74;--m-failed:#58534a;--m-none:#2b2a27;--m-line:#161513}}
+.mapwrap{position:relative;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px}
+.mapwrap svg{width:100%;height:auto;display:block}
+.st{stroke:var(--m-line);stroke-width:1;cursor:pointer;transition:filter .1s;outline:none}
+.st.Enacted{fill:var(--m-enacted)}.st.Pending{fill:var(--m-pending)}.st.Failed{fill:var(--m-failed)}.st.None{fill:var(--m-none);stroke:var(--line)}
+.st:hover,.st:focus{filter:brightness(.82);stroke:var(--ink);stroke-width:1.5}
+.lb{font-size:13px;fill:var(--ink);pointer-events:none;font-weight:600}.stbox text{font-size:13px;fill:var(--ink);pointer-events:none;font-weight:600}
+.maptip{position:absolute;z-index:3;background:var(--card);color:var(--ink);border:1px solid var(--ink);border-radius:4px;padding:8px 10px;font-size:13px;line-height:1.4;width:180px;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.maptip small{color:var(--mute)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;list-style:none;padding:0;margin:10px 0 4px;font-size:14px}
+.legend .sw{display:inline-block;width:16px;height:16px;border:1px solid var(--line);vertical-align:-3px;margin-right:6px}
+.sw.Enacted{background:var(--m-enacted)}.sw.Pending{background:var(--m-pending)}.sw.Failed{background:var(--m-failed)}.sw.None{background:var(--m-none)}
+.small{color:var(--mute);font-size:13px;margin:4px 0 0}
