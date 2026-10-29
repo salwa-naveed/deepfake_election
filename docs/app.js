@@ -24,11 +24,12 @@ function stateInfo(name){
   let status='None';
   if(recs.some(l=>l.outcome==='Enacted'))status='Enacted';
   else if(recs.some(l=>l.outcome==='Pending'||l.outcome==='Passed'))status='Pending';
+  else if(recs.some(l=>l.outcome==='Vetoed'))status='Vetoed';
   else if(recs.length)status='Failed';
   return {name,recs,status,enacted:enactedLaws,bills:recs.filter(l=>l.type==='Bill')};
 }
 const SI={};STATES.forEach(s=>SI[s]=stateInfo(s));
-const STATUS_LABEL={Enacted:'Law enacted',Pending:'Legislation pending',Failed:'Bills failed or vetoed',None:'No legislation recorded'};
+const STATUS_LABEL={Enacted:'Law enacted',Pending:'Legislation pending',Vetoed:'Not enacted (vetoed)',Failed:'Bills failed',None:'No data'};
 function tipHtml(name){
   const s=SI[name];
   let h=`<b>${esc(name)}</b><br>${esc(STATUS_LABEL[s.status])}`;
@@ -50,8 +51,8 @@ function mapHtml(){
     const adj={FL:[12,8],LA:[-12,0],MI:[10,12],AK:[0,0]};const o=adj[a]||[0,0];return `<text class="lb" x="${c[0]+o[0]}" y="${c[1]+o[1]+4}" text-anchor="middle">${a}</text>`}).join('');
   const cnt=k=>STATES.filter(s=>SI[s].status===k).length;
   return `<div class="mapwrap"><svg viewBox="0 0 1075 610" role="group" aria-label="Map of state laws on deepfakes in elections, as of 2024">${paths}${boxes}${labels}</svg><div class="maptip" id="maptip" hidden></div></div>
-  <ul class="legend"><li><i class="sw Enacted"></i>Law enacted (${cnt('Enacted')})</li><li><i class="sw Pending"></i>Legislation pending (${cnt('Pending')})</li><li><i class="sw Failed"></i>Bills failed or vetoed (${cnt('Failed')})</li><li><i class="sw None"></i>No legislation recorded (${cnt('None')})</li></ul>
-  <p class="small">Status as of Dec. 31, 2024. Hover a state for details and click it to open its page. Laws passed in 2025 or later are not counted.</p>`;
+  <ul class="legend"><li><i class="sw Enacted"></i>Law enacted (${cnt('Enacted')})</li><li><i class="sw Pending"></i>Legislation pending (${cnt('Pending')})</li><li><i class="sw Vetoed"></i>Not enacted, vetoed (${cnt('Vetoed')})</li><li><i class="sw Failed"></i>Bills failed (${cnt('Failed')})</li><li><i class="sw None"></i>No data (${cnt('None')})</li></ul>
+  <p class="small">Status as of Dec. 31, 2024. A state shows its most advanced outcome: enacted, then pending, then vetoed, then failed. "No data" means neither source lists a bill for that state. Hover a state for details and click it to open its page. Laws passed in 2025 or later are not counted.</p>`;
 }
 function wireMap(){
   const tip=$('#maptip');if(!tip)return;const wrap=tip.parentElement;
@@ -117,7 +118,7 @@ views.incidents=()=>{
  <div><label for="iq">Search titles</label><input id="iq" placeholder="Search" value="${esc(IS.q)}"></div>
  ${sel('iy','Year',YEARS,IS.year)}
  ${sel('ik','Category',uniq(INC.map(e=>e.category)),IS.category)}
- ${sel('id','Deceptive intent',['Yes','No','Unclear'],IS.deceptive)}
+ ${sel('id','Deceptive intent (<a href="#about">how decided</a>)',['Yes','No','Unclear'],IS.deceptive)}
  <div><label for="is">Sort by</label><select id="is">${[['newest','Newest first'],['title','Title A–Z'],['category','Category']].map(o=>`<option value="${o[0]}" ${IS.sort===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
 </div>
 <div id="ilist"></div>`;
@@ -193,7 +194,7 @@ views.state=(name)=>{
   const prev=STATES[(STATES.indexOf(name)+STATES.length-1)%STATES.length],next=STATES[(STATES.indexOf(name)+1)%STATES.length];
   return `<p><a href="#visualizations">← Back to map</a></p>
   <h1>${esc(name)}</h1>
-  <p class="lede"><span class="pill ${s.status==='Enacted'?'Enacted':s.status==='Pending'?'Pending':s.status==='Failed'?'Failed':''}">${esc(STATUS_LABEL[s.status])}</span> as of Dec. 31, 2024.</p>
+  <p class="lede"><span class="pill ${s.status==='None'?'':s.status}">${esc(STATUS_LABEL[s.status])}</span> as of Dec. 31, 2024.</p>
   ${s.enacted.length?`<h2>Enacted</h2><div class="grid">${s.enacted.map(l=>`<article class="card"><div class="meta"><span>${l.pre2020?'Before 2020':l.year}</span><span>${esc(l.source)}</span></div><h3>${esc(l.bill)}</h3><p>${esc(l.title||l.summary||l.status)}</p><div class="row"><button data-staterec="${recs.indexOf(l)}">Details</button>${link(l.url,'Official record')}</div></article>`).join('')}</div>`:'<p>No law enacted in this state by the end of 2024 in the sources reviewed.</p>'}
   <h2>All recorded legislation (${recs.length})</h2>
   ${recs.length?`<div class="scroll"><table><thead><tr><th>Bill</th><th>Title</th><th>Outcome</th><th>Year</th><th>Source</th><th></th></tr></thead><tbody>${recs.map((l,i)=>`<tr><td>${safeUrl(l.url)?link(l.url,l.bill):esc(l.bill)}</td><td>${esc(l.title||l.lawType||'')}</td><td><span class="pill ${l.outcome}">${esc(l.outcome)}</span></td><td>${l.pre2020?'Before 2020':l.year}</td><td>${esc(l.source)}</td><td><button data-staterec="${i}">Details</button></td></tr>`).join('')}</tbody></table></div>`:'<p>Nothing recorded.</p>'}
@@ -240,6 +241,24 @@ views.about=()=>`<h1>About the collection</h1>
 <li><b>Outcomes:</b> Derived from status text: Enacted, Vetoed, Failed, Passed (including bills folded into a passed bill), or Pending.</li>
 <li><b>Incidents are thin before 2024:</b> only a handful of U.S. cases from 2020–2023 were found. Treat them as notable examples, not a count.</li>
 <li>Incident "deceptive intent" for compiled cases is our reading of the reporting; "Unclear" is used where intent was not established.</li></ul>
+<h2 id="deception">Codebook: what determines deceptive intent</h2>
+<p>"Deceptive intent" records whether the person or group who made or shared the media meant to make viewers believe something false. It is about the <b>creator's apparent intent</b>, not whether the media is fake: authentic footage can be deceptive when edited or framed to mislead, and AI media can be harmless when it is labeled. It is a judgment from public reporting, not a legal finding, and it does not use any state statute's definition of "materially deceptive."</p>
+<div class="scroll"><table><thead><tr><th>Value</th><th>Assign when</th><th>Examples in this collection</th></tr></thead><tbody>
+<tr><td><span class="pill Yes">Yes</span></td><td>The media was presented as genuine (or in a way a reasonable viewer would take as genuine) <b>and</b> at least one sign of intent to mislead is documented: a fact-checker or reporting says it was fabricated or edited to change its meaning; the source was hidden or impersonated; or it was released at a time that limits correction, such as just before a vote.</td><td>Biden New Hampshire robocall; Vallas audio posted the night before the Chicago election; the fake Warren clip.</td></tr>
+<tr><td><span class="pill No">No</span></td><td>The creator disclosed the media as AI-made, satire, parody or a demonstration, either on the media itself (label, disclaimer, watermark) or openly when it was released.</td><td>RNC ad labeled "Built entirely with AI imagery"; the Arizona Agenda's Kari Lake demonstration, made to show how easy deepfakes are.</td></tr>
+<tr><td><span class="pill">Unclear</span></td><td>Intent cannot be established from the sources: the creator says it was a demonstration but copies spread as real; the creator denies manipulating it; the creator admitted a prank only after it spread; or the authenticity itself is unresolved.</td><td>Midjourney Trump arrest images; the Biden clip Twitter labeled "manipulated media" (the poster said it was only shortened); the Clinton-endorses-DeSantis video (shared, then admitted manipulated).</td></tr></tbody></table></div>
+<h3>Signals checked, in order</h3>
+<ol>
+<li><b>Disclosure:</b> Is there a label, disclaimer, watermark or on-record statement that it is AI, satire or a demonstration?</li>
+<li><b>Presentation:</b> Was it framed as real footage or a real statement (news logo, captioned as a quote, no hint of parody)?</li>
+<li><b>Fact-check verdict:</b> Did a fact-checker or news outlet find it fabricated or edited to change meaning?</li>
+<li><b>Concealment:</b> Was the source hidden, impersonated, or a newly created account?</li>
+<li><b>Timing and target:</b> Was it timed near a vote, or aimed at voters or a candidate in a way that limits response?</li>
+<li><b>Creator statement:</b> Did the creator claim, deny or admit anything, and when? An admission after spreading does not count as disclosure.</li></ol>
+<ul>
+<li>Disclosure alone gives <b>No</b>. A label that is hidden, tiny or removed when reshared does not, so such cases default to <b>Unclear</b> unless reporting shows deliberate removal.</li>
+<li>If signals conflict, the entry is marked <b>Unclear</b> and the Notes field says why.</li>
+<li><b>Who coded it:</b> WIRED's records use WIRED's own "Deceptive intent?" label, applied as published. WIRED's criteria are not published alongside the data, and some of its labels may not match the rules above. For example, WIRED marks the deepfake porn of Rep. Ocasio-Cortez as "No"; we have not changed it, but it is worth checking. The other records were coded by this project using the rules above, by one reviewer working from the cited sources, so they are not double-coded and have no inter-coder reliability check. Treat them as a starting point and check the source links before relying on any label.</li></ul>
 <h2>Codebook</h2>
 <div class="scroll"><table><thead><tr><th>Field</th><th>Applies to</th><th>Meaning</th></tr></thead><tbody>
 <tr><td>category</td><td>Incident</td><td>Purpose of the use (Campaigning, Sow discord/confusion, Voting misinformation, and others).</td></tr>
