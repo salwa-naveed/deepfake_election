@@ -76,3 +76,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:6px 12px}dt{color:var(--mute
 .st.Enacted{fill:var(--m-enacted)}.st.Pending{fill:var(--m-pending)}.st.Vetoed{fill:var(--m-vetoed)}.st.Failed{fill:var(--m-failed)}.st.None{fill:var(--m-none);stroke:var(--m-line)}
 .sw.Enacted{background:var(--m-enacted)}.sw.Pending{background:var(--m-pending)}.sw.Vetoed{background:var(--m-vetoed)}.sw.Failed{background:var(--m-failed)}.sw.None{background:var(--m-none)}
 .lb,.stbox text{fill:#fff;stroke:rgba(0,0,0,.55);stroke-width:2.5px;paint-order:stroke}
+
+:root{--m-enacted:#1e6b3c;--m-pending:#f7e7a1;--m-failed:#9b1c1c;--m-none:#3b82c4}
+@media (prefers-color-scheme:dark){:root{--m-enacted:#2a8a52;--m-pending:#e9d68a;--m-failed:#b22d2d;--m-none:#4f8fd4}}
+.lb.Pending,.stbox text.Pending{fill:#1c1b19;stroke:rgba(255,255,255,.75)}

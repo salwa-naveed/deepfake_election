@@ -24,12 +24,11 @@ function stateInfo(name){
   let status='None';
   if(recs.some(l=>l.outcome==='Enacted'))status='Enacted';
   else if(recs.some(l=>l.outcome==='Pending'||l.outcome==='Passed'))status='Pending';
-  else if(recs.some(l=>l.outcome==='Vetoed'))status='Vetoed';
   else if(recs.length)status='Failed';
   return {name,recs,status,enacted:enactedLaws,bills:recs.filter(l=>l.type==='Bill')};
 }
 const SI={};STATES.forEach(s=>SI[s]=stateInfo(s));
-const STATUS_LABEL={Enacted:'Law enacted',Pending:'Legislation pending',Vetoed:'Not enacted (vetoed)',Failed:'Bills failed',None:'No data'};
+const STATUS_LABEL={Enacted:'Law enacted',Pending:'Legislation pending',Failed:'Bills failed or vetoed',None:'No data'};
 function tipHtml(name){
   const s=SI[name];
   let h=`<b>${esc(name)}</b><br>${esc(STATUS_LABEL[s.status])}`;
@@ -46,13 +45,13 @@ function mapHtml(){
   const paths=feats.map(f=>{const n=f.properties.name,a=ABBR[n];if(!a)return'';const s=SI[n].status;
     return `<path class="st ${s}" d="${path(f)}" tabindex="0" role="link" data-state="${esc(n)}" aria-label="${esc(n)}: ${esc(STATUS_LABEL[s])}"></path>`}).join('');
   const boxes=SMALL.map((a,i)=>{const n=Object.keys(ABBR).find(k=>ABBR[k]===a),s=SI[n].status,x=975+(i%2)*46,y=250+Math.floor(i/2)*44;
-    return `<g class="stbox"><rect class="st ${s}" x="${x}" y="${y}" width="40" height="34" rx="6" tabindex="0" role="link" data-state="${esc(n)}" aria-label="${esc(n)}: ${esc(STATUS_LABEL[s])}"></rect><text x="${x+20}" y="${y+22}" text-anchor="middle">${a}</text></g>`}).join('');
+    return `<g class="stbox"><rect class="st ${s}" x="${x}" y="${y}" width="40" height="34" rx="6" tabindex="0" role="link" data-state="${esc(n)}" aria-label="${esc(n)}: ${esc(STATUS_LABEL[s])}"></rect><text class="${s}" x="${x+20}" y="${y+22}" text-anchor="middle">${a}</text></g>`}).join('');
   const labels=feats.map(f=>{const n=f.properties.name,a=ABBR[n];if(!a||SMALL.includes(a))return'';const c=path.centroid(f);if(isNaN(c[0]))return'';
-    const adj={FL:[12,8],LA:[-12,0],MI:[10,12],AK:[0,0]};const o=adj[a]||[0,0];return `<text class="lb" x="${c[0]+o[0]}" y="${c[1]+o[1]+4}" text-anchor="middle">${a}</text>`}).join('');
+    const adj={FL:[12,8],LA:[-12,0],MI:[10,12],AK:[0,0]};const o=adj[a]||[0,0];return `<text class="lb ${SI[n].status}" x="${c[0]+o[0]}" y="${c[1]+o[1]+4}" text-anchor="middle">${a}</text>`}).join('');
   const cnt=k=>STATES.filter(s=>SI[s].status===k).length;
   return `<div class="mapwrap"><svg viewBox="0 0 1075 610" role="group" aria-label="Map of state laws on deepfakes in elections, as of 2024">${paths}${boxes}${labels}</svg><div class="maptip" id="maptip" hidden></div></div>
-  <ul class="legend"><li><i class="sw Enacted"></i>Law enacted (${cnt('Enacted')})</li><li><i class="sw Pending"></i>Legislation pending (${cnt('Pending')})</li><li><i class="sw Vetoed"></i>Not enacted, vetoed (${cnt('Vetoed')})</li><li><i class="sw Failed"></i>Bills failed (${cnt('Failed')})</li><li><i class="sw None"></i>No data (${cnt('None')})</li></ul>
-  <p class="small">Status as of Dec. 31, 2024. A state shows its most advanced outcome: enacted, then pending, then vetoed, then failed. "No data" means neither source lists a bill for that state. Hover a state for details and click it to open its page. Laws passed in 2025 or later are not counted.</p>`;
+  <ul class="legend"><li><i class="sw Enacted"></i>Law enacted (${cnt('Enacted')})</li><li><i class="sw Pending"></i>Legislation pending (${cnt('Pending')})</li><li><i class="sw Failed"></i>Bills failed or vetoed (${cnt('Failed')})</li><li><i class="sw None"></i>No data (${cnt('None')})</li></ul>
+  <p class="small">Status as of Dec. 31, 2024. A state shows its most advanced outcome: enacted, then pending, then failed or vetoed. "No data" means neither source lists a bill for that state. Hover a state for details and click it to open its page. Laws passed in 2025 or later are not counted.</p>`;
 }
 function wireMap(){
   const tip=$('#maptip');if(!tip)return;const wrap=tip.parentElement;
